@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import apiClient from '../api/client.js';
+import apiClient, { getApiErrorMessage } from '../api/client.js';
 
 function TasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -36,8 +36,7 @@ function TasksPage() {
       setTasks(response.data.data.tasks);
       setPagination(response.data.data.pagination);
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Failed to load tasks. Please try again.';
+      const msg = getApiErrorMessage(err, 'Failed to load tasks. Please try again.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -66,8 +65,7 @@ function TasksPage() {
       await fetchTasks(1);
       showSuccess('Task added');
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Failed to create task. Please try again.';
+      const msg = getApiErrorMessage(err, 'Failed to create task. Please try again.');
       setError(msg);
     } finally {
       setLoading(false);
@@ -81,8 +79,7 @@ function TasksPage() {
       await fetchTasks(pagination?.page || 1);
       showSuccess('Task updated');
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Failed to update task. Please try again.';
+      const msg = getApiErrorMessage(err, 'Failed to update task. Please try again.');
       setError(msg);
     }
   };
@@ -126,8 +123,7 @@ function TasksPage() {
       await fetchTasks(pagination?.page || 1);
       showSuccess('Task updated');
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Failed to update task. Please try again.';
+      const msg = getApiErrorMessage(err, 'Failed to update task. Please try again.');
       setError(msg);
     }
   };
@@ -138,8 +134,7 @@ function TasksPage() {
       await fetchTasks(pagination?.page || 1);
       showSuccess('Task deleted');
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Failed to delete task. Please try again.';
+      const msg = getApiErrorMessage(err, 'Failed to delete task. Please try again.');
       setError(msg);
     }
   };

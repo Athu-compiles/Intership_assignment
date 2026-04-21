@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+import { API_BASE_URL } from '../config/api.js';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -10,6 +9,13 @@ let onUnauthorized = null;
 
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
+}
+
+export function getApiErrorMessage(error, fallbackMessage = 'Server error. Please try again.') {
+  if (!error.response) {
+    return 'Unable to reach server. Please check your internet connection.';
+  }
+  return error.response?.data?.message || fallbackMessage;
 }
 
 apiClient.interceptors.request.use(

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import apiClient from '../api/client.js';
+import apiClient, { getApiErrorMessage } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 function LoginPage() {
@@ -38,8 +38,10 @@ function LoginPage() {
       login(token, user);
       navigate('/dashboard');
     } catch (err) {
-      const msg =
-        err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const msg = getApiErrorMessage(
+        err,
+        'Login failed. Please check your credentials.',
+      );
       setError(msg);
     } finally {
       setLoading(false);
