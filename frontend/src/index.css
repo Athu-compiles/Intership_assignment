@@ -78,6 +78,34 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0.1rem;
+  line-height: 1;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: transparent;
+}
+
 input,
 select,
 textarea {
@@ -130,6 +158,30 @@ textarea:focus {
   font-size: 0.85rem;
 }
 
+.dashboard-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.role-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.role-badge--admin {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.role-badge--user {
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
 .task-list ul {
   list-style: none;
   padding: 0;
@@ -149,6 +201,38 @@ textarea:focus {
 
 .task-item + .task-item {
   margin-top: 0.5rem;
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icon-button {
+  min-width: 2rem;
+  padding: 0.35rem 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button--danger {
+  background-color: #dc2626;
+}
+
+.icon-button--danger:hover {
+  background-color: #b91c1c;
+}
+
+.task-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .task-status {

@@ -1,26 +1,22 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { setUnauthorizedHandler } from '../api/client.js';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+  const navigate = useNavigate();
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        setUser(null);
-      }
+    if (!storedUser) return null;
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
     }
-    setLoading(false);
-  }, []);
+  });
+  const [loading] = useState(false);
 
   const login = (newToken, newUser) => {
     setToken(newToken);
@@ -29,22 +25,34 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  };
+    navigate('/login', { replace: true });
+  }, [navigate]);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      logout();
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
+
+  const authValue = useMemo(
+    () => ({ user, token, loading, login, logout, isAuthenticated: !!token }),
+    [loading, logout, token, user],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{ user, token, loading, login, logout, isAuthenticated: !!token }}
-    >
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

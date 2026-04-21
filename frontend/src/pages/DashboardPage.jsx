@@ -8,9 +8,10 @@ function DashboardPage() {
     <div className="page-container">
       <header className="page-header">
         <h1>Dashboard</h1>
-        <div>
-          <span className="user-badge">
-            {user?.name} ({user?.role})
+        <div className="dashboard-user-meta">
+          <span className="user-badge">{user?.name || 'User'}</span>
+          <span className={`role-badge role-badge--${user?.role || 'user'}`}>
+            {(user?.role || 'user').toUpperCase()}
           </span>
           <button onClick={logout}>Logout</button>
         </div>

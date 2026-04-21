@@ -6,6 +6,12 @@ const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
+let onUnauthorized = null;
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -15,6 +21,16 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && onUnauthorized) {
+      onUnauthorized();
+    }
+    return Promise.reject(error);
+  },
 );
 
 export default apiClient;

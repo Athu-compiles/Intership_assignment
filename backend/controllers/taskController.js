@@ -272,29 +272,39 @@ async function updateTask(req, res, next) {
 
 /**
  * Delete a task.
- * - Only admin can delete (enforced via route-level middleware)
+ * - Users: only their own task
+ * - Admin: any task
  * DELETE /api/v1/tasks/:id
  */
 async function deleteTask(req, res, next) {
   const { id } = req.params;
+  const isAdmin = req.user.role === 'admin';
+  const userId = req.user.id;
 
   try {
     const client = await pool.connect();
 
     try {
-      const query = `
+      let query = `
         DELETE FROM tasks
         WHERE id = $1
-        RETURNING id;
       `;
+      const values = [id];
 
-      const { rows } = await client.query(query, [id]);
+      if (!isAdmin) {
+        query += ' AND user_id = $2';
+        values.push(userId);
+      }
+
+      query += ' RETURNING id;';
+
+      const { rows } = await client.query(query, values);
 
       if (rows.length === 0) {
         return apiResponse(res, {
           statusCode: 404,
           success: false,
-          message: 'Task not found',
+          message: 'Task not found or you are not allowed to delete it',
         });
       }
 

@@ -9,8 +9,8 @@ import './App.css';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -23,8 +23,8 @@ function App() {
 
           <Route path="*" element={<div>Page not found</div>} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

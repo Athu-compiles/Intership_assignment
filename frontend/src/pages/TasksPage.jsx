@@ -6,11 +6,25 @@ function TasksPage() {
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
     description: '',
   });
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    status: 'pending',
+  });
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 1800);
+  };
 
   const fetchTasks = async (page = 1) => {
     setLoading(true);
@@ -50,6 +64,7 @@ function TasksPage() {
       await apiClient.post('/tasks', form);
       setForm({ title: '', description: '' });
       await fetchTasks(1);
+      showSuccess('Task added');
     } catch (err) {
       const msg =
         err.response?.data?.message || 'Failed to create task. Please try again.';
@@ -64,6 +79,7 @@ function TasksPage() {
     try {
       await apiClient.put(`/tasks/${task.id}`, { status: nextStatus });
       await fetchTasks(pagination?.page || 1);
+      showSuccess('Task updated');
     } catch (err) {
       const msg =
         err.response?.data?.message || 'Failed to update task. Please try again.';
@@ -75,6 +91,57 @@ function TasksPage() {
     if (!pagination) return;
     if (nextPage < 1 || nextPage > pagination.totalPages) return;
     fetchTasks(nextPage);
+  };
+
+  const startEdit = (task) => {
+    setEditingTaskId(task.id);
+    setEditForm({
+      title: task.title,
+      description: task.description || '',
+      status: task.status,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingTaskId(null);
+    setEditForm({ title: '', description: '', status: 'pending' });
+  };
+
+  const handleEditFormChange = (e) => {
+    setEditForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleUpdateTask = async (taskId) => {
+    if (!editForm.title.trim()) return;
+    try {
+      await apiClient.put(`/tasks/${taskId}`, {
+        title: editForm.title.trim(),
+        description: editForm.description.trim(),
+        status: editForm.status,
+      });
+      cancelEdit();
+      await fetchTasks(pagination?.page || 1);
+      showSuccess('Task updated');
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || 'Failed to update task. Please try again.';
+      setError(msg);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await apiClient.delete(`/tasks/${taskId}`);
+      await fetchTasks(pagination?.page || 1);
+      showSuccess('Task deleted');
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || 'Failed to delete task. Please try again.';
+      setError(msg);
+    }
   };
 
   const hasTasks = tasks.length > 0;
@@ -119,6 +186,7 @@ function TasksPage() {
       </section>
 
       {error && <p className="error-message">{error}</p>}
+      {successMessage && <p className="success-message">{successMessage}</p>}
 
       <section className="task-list">
         <h2>Your Tasks</h2>
@@ -129,17 +197,72 @@ function TasksPage() {
             No tasks yet. Create your first one above to see it appear here.
           </p>
         ) : (
-          <ul>
+          <ul className="task-items">
             {tasks.map((task) => (
               <li key={task.id} className={`task-item status-${task.status}`}>
-                <div>
-                  <strong>{task.title}</strong>
-                  {task.description && <p>{task.description}</p>}
-                  <span className="task-status">Status: {task.status}</span>
+                <div className="task-content">
+                  {editingTaskId === task.id ? (
+                    <div className="task-edit-form">
+                      <input
+                        type="text"
+                        name="title"
+                        value={editForm.title}
+                        onChange={handleEditFormChange}
+                        required
+                      />
+                      <textarea
+                        name="description"
+                        value={editForm.description}
+                        onChange={handleEditFormChange}
+                        placeholder="Description"
+                      />
+                      <select
+                        name="status"
+                        value={editForm.status}
+                        onChange={handleEditFormChange}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <>
+                      <strong>{task.title}</strong>
+                      {task.description && <p>{task.description}</p>}
+                      <span className="task-status">Status: {task.status}</span>
+                    </>
+                  )}
                 </div>
-                <button onClick={() => handleToggleStatus(task)}>
-                  Mark {task.status === 'pending' ? 'Completed' : 'Pending'}
-                </button>
+                <div className="task-actions">
+                  {editingTaskId === task.id ? (
+                    <>
+                      <button onClick={() => handleUpdateTask(task.id)}>Save</button>
+                      <button onClick={cancelEdit}>Cancel</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => handleToggleStatus(task)}>
+                        Mark {task.status === 'pending' ? 'Completed' : 'Pending'}
+                      </button>
+                      <button
+                        className="icon-button"
+                        onClick={() => startEdit(task)}
+                        aria-label="Edit task"
+                        title="Edit task"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="icon-button icon-button--danger"
+                        onClick={() => handleDeleteTask(task.id)}
+                        aria-label="Delete task"
+                        title="Delete task"
+                      >
+                        🗑️
+                      </button>
+                    </>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
